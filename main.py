@@ -1,16 +1,61 @@
-# This is a sample Python script.
+import sys
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from PyQt6.QtWidgets import QDialog, QApplication, QMessageBox
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from layout import Ui_Dialog
 
 
-# Press the green button in the gutter to run the script.
+class MyApp(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ui_Dialog()
+        self.ui.setupUi(self)
+
+        self.ui.exportButton.clicked.connect(self.export)
+        self.ui.addButton.clicked.connect(self.addItem)
+        self.ui.removeButton.clicked.connect(self.removeItem)
+
+        self.show()
+
+    def export(self):
+        with open("export.txt", "w") as f:
+            for i in range(self.ui.productList.count()):
+                f.write(self.ui.productList.item(i).text() + "\n")
+        f.close()
+
+    def addItem(self):
+        alert = self.validate()
+        if alert is None:
+            self.ui.productList.addItem(self.ui.nameEdit.text())
+        else:
+            alert.exec()
+
+    def removeItem(self):
+        if self.ui.productList.currentRow() == -1:
+            return
+        self.ui.productList.takeItem(self.ui.productList.currentRow())
+
+    def validate(self):
+        if self.ui.nameEdit.text() == '' or self.ui.amountEdit.text() == '':
+            alert = QMessageBox()
+            alert.setInformativeText("Nazwa i ilość nie mogą być puste")
+            alert.setWindowTitle("Błąd")
+            alert.setStandardButtons(QMessageBox.StandardButton.Ok)
+            return alert
+        if self.ui.nameEdit.text().__len__() > 50:
+            alert = QMessageBox()
+            alert.setInformativeText("Nazwa jest za długa")
+            alert.setWindowTitle("Błąd")
+            alert.setStandardButtons(QMessageBox.StandardButton.Ok)
+            return alert
+        return None
+
+
+def main():
+    app = QApplication(sys.argv)
+    window = MyApp()
+    sys.exit(app.exec())
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    main()
